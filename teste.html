@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    .csv-field-container {
+  display: flex;
+}
+
+.csv-fields, .db-fields {
+  border: 1px solid #ccc;
+  padding: 10px;
+  min-height: 200px;
+  width: 150px;
+}
+
+.csv-field, .db-field {
+  background-color: #f1f1f1;
+  border: 1px solid #ddd;
+  padding: 5px;
+  margin: 5px;
+  cursor: pointer;
+}
+
+.db-field {
+  background-color: #d9f1a9;
+}
+
+  </style>
+</head>
+<body>
+  <div class="csv-field-container">
+    <div class="csv-fields" id="csv-fields">
+      <div class="csv-field" draggable="true" data-fieldname="Nome">Nome</div>
+      <div class="csv-field" draggable="true" data-fieldname="Idade">Idade</div>
+      <div class="csv-field" draggable="true" data-fieldname="Email">Email</div>
+      <!-- Adicione mais campos do CSV aqui -->
+    </div>
+  </div>
+  
+  <div class="db-fields" id="db-fields" droppable="true">
+    <div class="db-field" data-fieldname="First_Name">Primeiro Nome</div>
+    <div class="db-field" data-fieldname="Age">Idade</div>
+    <div class="db-field" data-fieldname="Email_Address">Endereço de Email</div>
+    <!-- Adicione mais campos do banco de dados aqui -->
+  </div>
+  <script>
+    // Adicione o código JavaScript para tornar os campos arrastáveis e soltáveis
+const csvFields = document.querySelectorAll('.csv-field');
+const dbFields = document.querySelectorAll('.db-field');
+
+csvFields.forEach(field => {
+  field.addEventListener('dragstart', (e) => {
+    e.dataTransfer.setData('text/plain', e.target.dataset.fieldname);
+  });
+});
+
+dbFields.forEach(field => {
+  field.addEventListener('dragover', (e) => {
+    e.preventDefault();
+  });
+
+  field.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const data = e.dataTransfer.getData('text/plain');
+    e.target.innerText = data; // Atualiza o campo do banco de dados com o nome do campo CSV
+  });
+});
+
+  </script>
+</body>
+</html>
