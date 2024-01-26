@@ -1,113 +1,221 @@
-import Image from "next/image";
+'use client'
+
+import React, { useState } from "react"
+
+import { ArrowRightIcon, UploadIcon } from '@radix-ui/react-icons'
+
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Separator } from "@/components/ui/separator"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Badge } from "@/components/ui/badge"
+import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+
+interface dados {
+  host?: string,
+  database?: string,
+  port?: number,
+  table?: string
+  user?: string,
+  password?: string
+}
+
 
 export default function Home() {
+  const [fileName, setFileName] = useState("")
+  const [fileLoading, setFileLoading] = useState(false)
+  const [dados, setDados] = useState({} as dados)
+  const [connectSucess, setConnectSucess] = useState(false)
+  const [checkTestConnection, setCheckTestConnection] = useState(false)
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setFileLoading(true)
+
+    const file = event.target.files?.[0]
+    const fileSize = file?.size
+
+    if (!file) {
+      alert("Por favor, selecione um arquivo CSV compatível!")
+      return
+    }
+
+    if (file.type !== "text/csv") {
+      alert("Por favor, selecione um arquivo CSV compatível!")
+      return
+    }
+
+    if (event.target.files?.length !== 1) {
+      alert("Por favor, selecione apenas um arquivo CSV!")
+      return
+    }
+
+    if (fileSize && fileSize > 1024 * 1024 * 1024) { // 1Gb = 1000000000
+      alert("Por favor, selecione um arquivo CSV menor que 1Gb!")
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = () => {
+      const csv = reader.result as string
+      console.log(csv)
+    }
+    reader.readAsText(file)
+
+    setFileLoading(false)
+    setFileName(file.name)
+  }
+
+  const handleTestConnection = async () => {
+
+    try {
+      const result = `dwdwddw`
+
+      console.log(`Teste de conexão: ${result}`)
+    } catch (error) {
+      console.error(`Erro ao testar a conexão: ${error}`)
+    }
+  }
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <>
+      <header className="flex h-11 justify-between w-screen items-center pl-4 pr-4">
+        <Label htmlFor="fileInput" className="text-2xl">Csv to Database</Label>
+        <div className="flex gap-4 items-center">
+          <Label htmlFor="fileInput" className="text-sm">
+            <div className="border p-1 pl-2 pr-2 items-center flex rounded cursor-pointer hover:bg-accent">
+              <UploadIcon className="h-4 w-4" />
+              <p className="ml-2">{fileName ? `Carregado ${fileName}` : "Selecione o arquivo CSV"}</p>
+            </div>   
+            <Input id="fileInput" className="hidden" type="file" accept=".csv" onChange={handleFileChange}/>
+          </Label>
+    
+          <ArrowRightIcon className="h-10 w-10" />
+
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button className="h-8 hover:bg-primary/40">Conectar Database</Button>
+            </SheetTrigger>
+            <SheetContent>
+              <SheetHeader>
+                <SheetTitle>Conecte ao Banco de Dados</SheetTitle>
+                <SheetDescription>
+                  Nesta seção você pode configurar a sua conexão com o banco de dados.
+                </SheetDescription>
+              </SheetHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="host" className="text-right">
+                    Host
+                  </Label>
+                  <Input autoComplete="off" id="host" placeholder="Ex: 192.168.1.100"
+                    value={dados.host} 
+                    onChange={(e) => setDados({...dados, host: e.target.value})}
+                    className="col-span-3"
+                  />
+                </div>
+              
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="database" className="text-right">
+                    Database
+                  </Label>
+                  <Input autoComplete="off" id="database" placeholder="Ex: MyDatabase"
+                    value={dados.database} 
+                    onChange={(e) => setDados({...dados, database: e.target.value})}
+                    className="col-span-3" 
+                  />
+                </div>
+              
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="port" className="text-right">
+                    Port
+                  </Label>
+                  <Input autoComplete="off"  type="number" id="port" placeholder="5432"
+                    value={dados.port} 
+                    onChange={(e) => setDados({...dados, port: parseInt(e.target.value)})}  
+                    className="col-span-3 [&::-webkit-inner-spin-button]:appearance-none" 
+                  />
+                </div>
+              
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="table" className="text-right">
+                    Table
+                  </Label>
+                  <Input autoComplete="off" id="table" placeholder="Ex: MyTable"
+                    value={dados.table} 
+                    onChange={(e) => setDados({...dados, table: e.target.value})}  
+                    className="col-span-3" 
+                  />
+                </div>
+              <Separator />
+              <Label className="text-lg">Acesso</Label>
+          
+              <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="username" className="text-right">
+                    User
+                  </Label>
+                  <Input autoComplete="off" id="username" placeholder="Ex: postgres"
+                    value={dados.user} 
+                    onChange={(e) => setDados({...dados, user: e.target.value})} 
+                    className="col-span-3" 
+                  />
+                </div>
+              
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="password" className="text-right">
+                    Password
+                  </Label>
+                  <Input autoComplete="off" type="password" id="password" 
+                    value={dados.password}
+                    onChange={(e) => setDados({...dados, password: e.target.value})} 
+                    className="col-span-3" 
+                  />
+                </div>
+              </div>
+              
+              <Separator />
+
+              <div className="mt-4 mb-4 h-4 flex  justify-between items-center">
+                <div className="flex items-center">
+                  <Checkbox id="testConnection" onCheckedChange={() => setCheckTestConnection(!checkTestConnection)} />
+                  <Label htmlFor="testConnection" className="text-right ml-2">
+                    Testar Conexão
+                  </Label>
+                </div>
+
+                {checkTestConnection && (
+                  <div className="w-30 h-6 transition-opacity duration-1000 ease-in-out   opacity-100  ">
+                    {connectSucess ? (
+                      <Badge className="bg-green-700/80">Conexão bem sucedida!</Badge>
+                    ): (
+                      <Badge className="bg-red-700/80">Conexão mal sucedida!</Badge>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <Separator />
+
+              <SheetFooter className="mt-10">
+                <SheetClose asChild>
+                  <Button type="submit" onClick={() => handleTestConnection()}>Conectar</Button>
+                </SheetClose>
+              </SheetFooter>
+            </SheetContent>
+          </Sheet>
+
         </div>
-      </div>
+      </header>
 
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-full sm:before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full sm:after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+      <Separator />
 
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
+      <main>
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50 text-balance`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  );
+      </main>
+      <footer>
+        <p>Feito com ❤️ por <a href="https://github.com/LuizGabe">LuizGabe</a></p>
+        <p>2023</p>
+      </footer>
+    </>
+  )
 }
