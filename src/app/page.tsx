@@ -4,7 +4,9 @@ import { connectToPostgres } from "@/app/database"
 import React, { useState } from "react"
 
 // Icons
-import { ArrowRightIcon, UploadIcon } from '@radix-ui/react-icons'
+import { ArrowRightIcon, UploadIcon, CalendarIcon } from '@radix-ui/react-icons'
+import { DiPostgresql } from "react-icons/di";
+import { GrMysql } from "react-icons/gr";
 
 // Components
 import { Button } from "@/components/ui/button"
@@ -13,27 +15,28 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card"
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup } from "@/components/ui/select"
 
 interface dados {
-  host?: string,
-  database?: string,
-  port?: number,
-  table?: string
-  user?: string,
-  password?: string
+  host: string,
+  database: string,
+  port: number,
+  table: string
+  user: string,
+  password: string
 }
 
 
 export default function Home() {
   const [fileName, setFileName] = useState("")
-  const [fileLoading, setFileLoading] = useState(false)
-  const [dados, setDados] = useState({} as dados)
+  const [connectionData, setConnectionData] = useState({} as dados)
   const [connectSucess, setConnectSucess] = useState(false)
-  const [checkTestConnection, setCheckTestConnection] = useState(false)
+  const [checkTestConnection, setCheckTestConnection] = useState(true)
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setFileLoading(true)
 
     const file = event.target.files?.[0]
     const fileSize = file?.size
@@ -65,14 +68,13 @@ export default function Home() {
     }
     reader.readAsText(file)
 
-    setFileLoading(false)
     setFileName(file.name)
   }
 
   const handleTestConnection = async () => {
 
     try {
-      
+
       const databaseInfo = await connectToPostgres()
 
       if (!databaseInfo) {
@@ -115,14 +117,39 @@ export default function Home() {
                   Nesta seção você pode configurar a sua conexão com o banco de dados.
                 </SheetDescription>
               </SheetHeader>
+
               <div className="grid gap-4 py-4">
+
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label className="text-right">Tipo DB</Label>
+                  <Select>
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="Selecione o banco de dados" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value="postgres">
+                          <Badge variant="default" className="gap-2 hover:bg-primary">
+                            <p>PostgreSQL</p>
+                            <DiPostgresql className="h-5 w-5"/></Badge>
+                        </SelectItem>
+                        <SelectItem value="mysqql">
+                          <Badge variant="default" className="gap-2 hover:bg-primary">
+                            <p>MySQL</p>
+                            <GrMysql className="h-5 w-5" /></Badge>
+                        </SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="host" className="text-right">
                     Host
                   </Label>
                   <Input autoComplete="off" id="host" placeholder="Ex: 192.168.1.100"
-                    value={dados.host}
-                    onChange={(e) => setDados({ ...dados, host: e.target.value })}
+                    value={connectionData.host}
+                    onChange={(e) => setConnectionData({ ...connectionData, host: e.target.value })}
                     className="col-span-3"
                   />
                 </div>
@@ -132,8 +159,8 @@ export default function Home() {
                     Database
                   </Label>
                   <Input autoComplete="off" id="database" placeholder="Ex: MyDatabase"
-                    value={dados.database}
-                    onChange={(e) => setDados({ ...dados, database: e.target.value })}
+                    value={connectionData.database}
+                    onChange={(e) => setConnectionData({ ...connectionData, database: e.target.value })}
                     className="col-span-3"
                   />
                 </div>
@@ -143,8 +170,8 @@ export default function Home() {
                     Port
                   </Label>
                   <Input autoComplete="off" type="number" id="port" placeholder="5432"
-                    value={dados.port}
-                    onChange={(e) => setDados({ ...dados, port: parseInt(e.target.value) })}
+                    value={connectionData.port}
+                    onChange={(e) => setConnectionData({ ...connectionData, port: parseInt(e.target.value) })}
                     className="col-span-3 [&::-webkit-inner-spin-button]:appearance-none"
                   />
                 </div>
@@ -154,8 +181,8 @@ export default function Home() {
                     Table
                   </Label>
                   <Input autoComplete="off" id="table" placeholder="Ex: MyTable"
-                    value={dados.table}
-                    onChange={(e) => setDados({ ...dados, table: e.target.value })}
+                    value={connectionData.table}
+                    onChange={(e) => setConnectionData({ ...connectionData, table: e.target.value })}
                     className="col-span-3"
                   />
                 </div>
@@ -167,8 +194,8 @@ export default function Home() {
                     User
                   </Label>
                   <Input autoComplete="off" id="username" placeholder="Ex: postgres"
-                    value={dados.user}
-                    onChange={(e) => setDados({ ...dados, user: e.target.value })}
+                    value={connectionData.user}
+                    onChange={(e) => setConnectionData({ ...connectionData, user: e.target.value })}
                     className="col-span-3"
                   />
                 </div>
@@ -178,8 +205,8 @@ export default function Home() {
                     Password
                   </Label>
                   <Input autoComplete="off" type="password" id="password"
-                    value={dados.password}
-                    onChange={(e) => setDados({ ...dados, password: e.target.value })}
+                    value={connectionData.password}
+                    onChange={(e) => setConnectionData({ ...connectionData, password: e.target.value })}
                     className="col-span-3"
                   />
                 </form>
@@ -187,30 +214,21 @@ export default function Home() {
 
               <Separator />
 
-              <div className="mt-4 mb-4 h-4 flex  justify-between items-center">
-                <div className="flex items-center">
-                  <Checkbox id="testConnection" onCheckedChange={() => setCheckTestConnection(!checkTestConnection)} />
-                  <Label htmlFor="testConnection" className="text-right ml-2">
-                    Testar Conexão
-                  </Label>
-                </div>
-
-                {checkTestConnection && (
-                  <div className="w-30 h-6 transition-opacity duration-1000 ease-in-out   opacity-100  ">
-                    {connectSucess ? (
-                      <Badge className="bg-green-700/80">Conexão bem sucedida!</Badge>
-                    ) : (
-                      <Badge className="bg-red-700/80">Conexão mal sucedida!</Badge>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              <Separator />
-
               <SheetFooter className="mt-10">
                 <SheetClose asChild>
-                  <Button type="submit" onClick={() => handleTestConnection()}>Conectar</Button>
+                  <div className="flex items-center gap-8">
+                    {checkTestConnection && (
+                      <div className="w-30 h-6 transition-opacity duration-1000 ease-in-out opacity-100">
+                        {connectSucess ? (
+                          <Badge variant="noHover" className="bg-green-700 hover:bg-green-700 drop-shadow-glow">Conexão bem sucedida!</Badge>
+                        ) : (
+                          <Badge variant="noHover" className="bg-red-500 animate-pulse drop-shadow-glow">Conexão mal sucedida!</Badge>
+                        )}
+                      </div>
+                    )}
+                    <Button type="submit" onClick={() => handleTestConnection()}>Conectar</Button>
+
+                  </div>
                 </SheetClose>
               </SheetFooter>
             </SheetContent>
@@ -223,7 +241,36 @@ export default function Home() {
 
       </main>
       <footer className="justify-center flex items-center gap-2">
-        <p>Feito com ❤️ por <a className="underline hover:text-primary" href="https://github.com/LuizGabe">LuizGabe</a></p>
+        <div className="flex items-center">
+          <p>Feito com ❤️ por</p>
+          <HoverCard>
+            <HoverCardTrigger asChild>
+              <Button variant="link" className="pl-2">@LuizGabe</Button>
+            </HoverCardTrigger>
+            <HoverCardContent className="w-90">
+              <div className="flex justify-between space-x-4">
+                <Avatar>
+                  <AvatarImage src="https://github.com/LuizGabe.png" />
+                  <AvatarFallback>Luiz</AvatarFallback>
+                </Avatar>
+                <div className="space-y-1">
+                  <h4 className="text-sm font-semibold">Luiz Gabriel</h4>
+                  <p className="text-sm">
+                    Junior Developer, Always Studying.
+                    {/* TODO: INTEGRAR COM A API DO GITHUB https://api.github.com/users/LuizGabe -> PEGAR O data.bio */}
+                  </p>
+                  <div className="flex items-center pt-2">
+                    <CalendarIcon className="mr-2 h-4 w-4 opacity-70" />{" "}
+                    <span className="text-xs text-muted-foreground">
+                      Developer since June 2021
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </HoverCardContent>
+          </HoverCard>
+
+        </div>
         <p>2023</p>
       </footer>
 
