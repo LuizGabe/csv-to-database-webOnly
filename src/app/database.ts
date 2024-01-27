@@ -3,11 +3,11 @@
 import { Client, QueryResult } from 'pg';
 
 const ConnectionData = {
-  host: 'localhost',
+  host: 'viaduct.proxy.rlwy.net',
   user: 'postgres',
-  password: 'password',
-  database: 'postgres',
-  port: 5432,
+  password: '1B3gbbfC3Bd2ag4f5bFBCaDdDf5G5C2D',
+  database: 'railway',
+  port: 17387,
 };
 
 const client = new Client(ConnectionData);
