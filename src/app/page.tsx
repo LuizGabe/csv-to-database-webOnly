@@ -1,9 +1,12 @@
 'use client'
 
+import { connectToPostgres } from "@/app/database"
 import React, { useState } from "react"
 
+// Icons
 import { ArrowRightIcon, UploadIcon } from '@radix-ui/react-icons'
 
+// Components
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -69,27 +72,36 @@ export default function Home() {
   const handleTestConnection = async () => {
 
     try {
-      const result = `dwdwddw`
+      
+      const databaseInfo = await connectToPostgres()
 
-      console.log(`Teste de conexão: ${result}`)
+      if (!databaseInfo) {
+        console.log("Conexão falhou!")
+        console.log(databaseInfo)
+        return
+      }
+      console.log(databaseInfo)
+      setConnectSucess(true)
+
     } catch (error) {
+      setConnectSucess(false)
       console.error(`Erro ao testar a conexão: ${error}`)
     }
   }
 
   return (
     <>
-      <header className="flex h-11 justify-between w-screen items-center pl-4 pr-4">
+      <header className="flex h-14 justify-between w-screen items-center pl-4 pr-4 border-b-2 rounded-b-lg">
         <Label htmlFor="fileInput" className="text-2xl">Csv to Database</Label>
         <div className="flex gap-4 items-center">
           <Label htmlFor="fileInput" className="text-sm">
             <div className="border p-1 pl-2 pr-2 items-center flex rounded cursor-pointer hover:bg-accent">
               <UploadIcon className="h-4 w-4" />
               <p className="ml-2">{fileName ? `Carregado ${fileName}` : "Selecione o arquivo CSV"}</p>
-            </div>   
-            <Input id="fileInput" className="hidden" type="file" accept=".csv" onChange={handleFileChange}/>
+            </div>
+            <Input id="fileInput" className="hidden" type="file" accept=".csv" onChange={handleFileChange} />
           </Label>
-    
+
           <ArrowRightIcon className="h-10 w-10" />
 
           <Sheet>
@@ -109,70 +121,70 @@ export default function Home() {
                     Host
                   </Label>
                   <Input autoComplete="off" id="host" placeholder="Ex: 192.168.1.100"
-                    value={dados.host} 
-                    onChange={(e) => setDados({...dados, host: e.target.value})}
+                    value={dados.host}
+                    onChange={(e) => setDados({ ...dados, host: e.target.value })}
                     className="col-span-3"
                   />
                 </div>
-              
+
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="database" className="text-right">
                     Database
                   </Label>
                   <Input autoComplete="off" id="database" placeholder="Ex: MyDatabase"
-                    value={dados.database} 
-                    onChange={(e) => setDados({...dados, database: e.target.value})}
-                    className="col-span-3" 
+                    value={dados.database}
+                    onChange={(e) => setDados({ ...dados, database: e.target.value })}
+                    className="col-span-3"
                   />
                 </div>
-              
+
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="port" className="text-right">
                     Port
                   </Label>
-                  <Input autoComplete="off"  type="number" id="port" placeholder="5432"
-                    value={dados.port} 
-                    onChange={(e) => setDados({...dados, port: parseInt(e.target.value)})}  
-                    className="col-span-3 [&::-webkit-inner-spin-button]:appearance-none" 
+                  <Input autoComplete="off" type="number" id="port" placeholder="5432"
+                    value={dados.port}
+                    onChange={(e) => setDados({ ...dados, port: parseInt(e.target.value) })}
+                    className="col-span-3 [&::-webkit-inner-spin-button]:appearance-none"
                   />
                 </div>
-              
+
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="table" className="text-right">
                     Table
                   </Label>
                   <Input autoComplete="off" id="table" placeholder="Ex: MyTable"
-                    value={dados.table} 
-                    onChange={(e) => setDados({...dados, table: e.target.value})}  
-                    className="col-span-3" 
+                    value={dados.table}
+                    onChange={(e) => setDados({ ...dados, table: e.target.value })}
+                    className="col-span-3"
                   />
                 </div>
-              <Separator />
-              <Label className="text-lg">Acesso</Label>
-          
-              <div className="grid grid-cols-4 items-center gap-4">
+                <Separator />
+                <Label className="text-lg">Acesso</Label>
+
+                <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="username" className="text-right">
                     User
                   </Label>
                   <Input autoComplete="off" id="username" placeholder="Ex: postgres"
-                    value={dados.user} 
-                    onChange={(e) => setDados({...dados, user: e.target.value})} 
-                    className="col-span-3" 
+                    value={dados.user}
+                    onChange={(e) => setDados({ ...dados, user: e.target.value })}
+                    className="col-span-3"
                   />
                 </div>
-              
-                <div className="grid grid-cols-4 items-center gap-4">
+
+                <form className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="password" className="text-right">
                     Password
                   </Label>
-                  <Input autoComplete="off" type="password" id="password" 
+                  <Input autoComplete="off" type="password" id="password"
                     value={dados.password}
-                    onChange={(e) => setDados({...dados, password: e.target.value})} 
-                    className="col-span-3" 
+                    onChange={(e) => setDados({ ...dados, password: e.target.value })}
+                    className="col-span-3"
                   />
-                </div>
+                </form>
               </div>
-              
+
               <Separator />
 
               <div className="mt-4 mb-4 h-4 flex  justify-between items-center">
@@ -187,7 +199,7 @@ export default function Home() {
                   <div className="w-30 h-6 transition-opacity duration-1000 ease-in-out   opacity-100  ">
                     {connectSucess ? (
                       <Badge className="bg-green-700/80">Conexão bem sucedida!</Badge>
-                    ): (
+                    ) : (
                       <Badge className="bg-red-700/80">Conexão mal sucedida!</Badge>
                     )}
                   </div>
@@ -207,15 +219,14 @@ export default function Home() {
         </div>
       </header>
 
-      <Separator />
-
       <main>
 
       </main>
-      <footer>
-        <p>Feito com ❤️ por <a href="https://github.com/LuizGabe">LuizGabe</a></p>
+      <footer className="justify-center flex items-center gap-2">
+        <p>Feito com ❤️ por <a className="underline hover:text-primary" href="https://github.com/LuizGabe">LuizGabe</a></p>
         <p>2023</p>
       </footer>
+
     </>
   )
 }
