@@ -21,8 +21,8 @@ import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/h
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup } from "@/components/ui/select"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
-// import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
-import {  } from 'react-beautiful-dnd';
+import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
+// import {  } from 'react-beautiful-dnd';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 interface dataInterface {
