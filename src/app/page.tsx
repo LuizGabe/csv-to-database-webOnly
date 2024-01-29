@@ -1,7 +1,7 @@
 'use client'
 
 import { connectToPostgres } from "@/app/database"
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 
 // Icons
 import { ArrowRightIcon, UploadIcon, CalendarIcon } from '@radix-ui/react-icons'
@@ -13,28 +13,135 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import { Switch } from "@/components/ui/switch"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card"
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup } from "@/components/ui/select"
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
+// import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd"
+import {  } from 'react-beautiful-dnd';
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
-interface dados {
-  host: string,
-  database: string,
-  port: number,
+interface dataInterface {
+  dialect: string
+  host: string
+  databaseName: string
+  port: string
   table: string
-  user: string,
+  user: string
   password: string
 }
 
+interface configInterface {
+  header: boolean
+  delimiter: string
+}
+
+interface badgeCSVInterface {
+  id: string
+  name: string
+}
+
+interface databaseColunsInterface {
+  name: string
+  type: string
+}
+
+interface databaseCsvConnectionInterface {
+  databaseName: string
+  csvHeader: string
+
+}
 
 export default function Home() {
+
+  const [badgesCSV, setBadgesCSV] = useState<badgeCSVInterface[]>([
+    {
+      id: "1",
+      name: "Nome"
+    },
+    {
+      id: "2",
+      name: "Data de Nascimento"
+    },
+    {
+      id: "3",
+      name: "Idade"
+    },
+    {
+      id: "4",
+      name: "Email"
+    },
+    {
+      id: "5",
+      name: "CPF"
+    },
+    {
+      id: "6",
+      name: "RG"
+    },
+    {
+      id: "7",
+      name: "Telefone"
+    },
+    {
+      id: "8",
+      name: "Celular"
+    },
+    {
+      id: "9",
+      name: "CEP"
+    }
+  ])
+  const [databaseColumns, setDatabaseColumns] = useState<databaseColunsInterface[]>([
+    {
+      name: "nome",
+      type: "text"
+    },
+    {
+      name: "data_nascimento",
+      type: "date"
+    },
+    {
+      name: "idade",
+      type: "number"
+    },
+    {
+      name: "email",
+      type: "text"
+    }
+  ])
+
+  const [databaseCsvConnection, setDatabaseCsvConnection] = useState<databaseCsvConnectionInterface[]>([])
+
   const [fileName, setFileName] = useState("")
-  const [connectionData, setConnectionData] = useState({} as dados)
   const [connectSucess, setConnectSucess] = useState(false)
   const [checkTestConnection, setCheckTestConnection] = useState(true)
+  const [configuration, setConfiguration] = useState({
+    header: true,
+    delimiter: ";"
+  } as configInterface)
+  const [connectionData, setConnectionData] = useState({
+    dialect: "postgres",
+    host: "",
+    databaseName: "",
+    port: "",
+    table: "",
+    user: "",
+    password: ""
+  } as dataInterface)
+
+  useEffect(() => {
+    console.log(connectionData)
+  }, [connectionData])
+
+  useEffect(() => {
+    console.log(configuration)
+  }, [configuration])
+
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 
@@ -91,8 +198,20 @@ export default function Home() {
     }
   }
 
+  const onDragEnd = (result: any, provider: any) => {
+    if (!result.destination) {
+      return
+    }
+
+    const itens: badgeCSVInterface[] = Array.from(badgesCSV)
+    const [removed] = itens.splice(result.source.index, 1)
+    itens.splice(result.destination.index, 0, removed)
+
+    setBadgesCSV(itens)
+  }
+
   return (
-    <>
+    <div className="flex flex-col h-screen">
       <header className="flex h-14 justify-between w-screen items-center pl-4 pr-4 border-b-2 rounded-b-lg">
         <Label htmlFor="fileInput" className="text-2xl">Csv to Database</Label>
         <div className="flex gap-4 items-center">
@@ -122,7 +241,7 @@ export default function Home() {
 
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label className="text-right">Tipo DB</Label>
-                  <Select>
+                  <Select value={connectionData.dialect} onValueChange={(value) => setConnectionData({ ...connectionData, dialect: value })}>
                     <SelectTrigger className="col-span-3">
                       <SelectValue placeholder="Selecione o banco de dados" />
                     </SelectTrigger>
@@ -131,9 +250,9 @@ export default function Home() {
                         <SelectItem value="postgres">
                           <Badge variant="default" className="gap-2 hover:bg-primary">
                             <p>PostgreSQL</p>
-                            <DiPostgresql className="h-5 w-5"/></Badge>
+                            <DiPostgresql className="h-5 w-5" /></Badge>
                         </SelectItem>
-                        <SelectItem value="mysqql">
+                        <SelectItem value="mysql">
                           <Badge variant="default" className="gap-2 hover:bg-primary">
                             <p>MySQL</p>
                             <GrMysql className="h-5 w-5" /></Badge>
@@ -159,8 +278,8 @@ export default function Home() {
                     Database
                   </Label>
                   <Input autoComplete="off" id="database" placeholder="Ex: MyDatabase"
-                    value={connectionData.database}
-                    onChange={(e) => setConnectionData({ ...connectionData, database: e.target.value })}
+                    value={connectionData.databaseName}
+                    onChange={(e) => setConnectionData({ ...connectionData, databaseName: e.target.value })}
                     className="col-span-3"
                   />
                 </div>
@@ -171,7 +290,7 @@ export default function Home() {
                   </Label>
                   <Input autoComplete="off" type="number" id="port" placeholder="5432"
                     value={connectionData.port}
-                    onChange={(e) => setConnectionData({ ...connectionData, port: parseInt(e.target.value) })}
+                    onChange={(e) => setConnectionData({ ...connectionData, port: e.target.value })}
                     className="col-span-3 [&::-webkit-inner-spin-button]:appearance-none"
                   />
                 </div>
@@ -237,10 +356,109 @@ export default function Home() {
         </div>
       </header>
 
-      <main>
+      <main className="w-full h-full flex">
+        <div className="w-80 border-2 border-y-0 border-l-0 bg-slate-900/80 justify-center flex flex-col">
+
+          {/* Configurations */}
+          <div className="w-full h-40 flex flex-col gap-2 items-center justify-center">
+
+            <div className="bg-slate-800 p-4 border-2 rounded-lg border-slate-950">
+              <div>
+                <h1 className="text-xl">Configurações</h1>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pb-2 pt-2">
+                <Label htmlFor="header" className="text-right text-md">Header: </Label>
+                <Switch id="header" checked={configuration.header} onCheckedChange={(check) => setConfiguration({ ...configuration, header: check })} />
+              </div>
+
+              <div className="flex items-center gap-2 justify-end">
+                <Label htmlFor="delimiter" className="text-right text-md">Delimitador: </Label>
+                <Input id="delimiter" className="w-10 bg-primary font-bold text-md" value={configuration.delimiter} onChange={(e) => setConfiguration({ ...configuration, delimiter: e.target.value })} />
+              </div>
+            </div>
+          </div>
+
+          {/* CSV Elements */}
+          <div className="w-full h-4/5 bg-slate-800 border-t-2 rounded-t-xl border-t-slate-950">
+            <div className="w-full flex justify-center p-4">
+              <h1 className="text-xl font-bold">Elementos CSV</h1>
+            </div>
+
+            <div className="w-full justify-center">
+              <DragDropContext onDragEnd={onDragEnd}>
+
+                <Droppable droppableId="droppable" type="list" direction="vertical">
+                  {(provider) => (
+                    <div ref={provider.innerRef} {...provider.droppableProps}>
+                      {
+                        badgesCSV.map((badge: badgeCSVInterface, index) => (
+
+                          <Draggable key={badge.id} draggableId={badge.id} index={index}>
+                            {(provider) => (
+                              <div ref={provider.innerRef} {...provider.draggableProps} {...provider.dragHandleProps}>
+                                <Badge variant="noHover" className="font-bold text-xl">{badge.name}</Badge>
+                              </div>
+                            )}
+                          </Draggable>
+
+                        ))
+                      }
+                      {provider.placeholder}
+                    </div>
+                  )}
+                </Droppable>
+
+              </DragDropContext>
+            </div>
+
+          </div>
+        </div>
+
+        <div className="w-full h-full flex justify-center items-center">
+          <div className="w-11/12 h-5/6">
+            <Table>
+              <TableHeader>
+                <TableRow className="">
+                  {
+                    databaseColumns.map((column, i) => (
+                      <TableHead className="w-[210px]" key={i}>{column.name.toUpperCase()}</TableHead>
+                    ))
+                  }
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableRow>
+                  {
+                    databaseColumns.map((row, i) => (
+                      <TableCell className="w-12" key={i}>
+                        <DragDropContext onDragEnd={() => { }}>
+                          <Droppable droppableId={row.name} key={i} type="list" direction="vertical">
+                            {(provider) => (
+                              <div ref={provider.innerRef} {...provider.droppableProps}>
+                                <Draggable key={i} draggableId={i.toString()} index={i}>
+                                  {(provider) => (
+                                    <div ref={provider.innerRef} {...provider.draggableProps} {...provider.dragHandleProps}>
+                                      <Badge variant="noHover" className="font-bold text-xl">{row.name}</Badge>
+                                    </div>
+                                  )}
+                                </Draggable>
+                              </div>
+                            )}
+                          </Droppable>
+                        </DragDropContext>
+                      </TableCell>
+                    ))
+                  }
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
+
+        </div>
 
       </main>
-      <footer className="justify-center flex items-center gap-2">
+      <footer className="border-t-2 justify-center flex items-center gap-2">
         <div className="flex items-center">
           <p>Feito com ❤️ por</p>
           <HoverCard>
@@ -274,6 +492,6 @@ export default function Home() {
         <p>2023</p>
       </footer>
 
-    </>
+    </div>
   )
 }

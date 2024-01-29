@@ -26,6 +26,16 @@
  
     --radius: 0.5rem;
   }
+
+  div[data-rfd-droppable-id="droppable"] {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    gap: 1rem;
+  }  
+  
 }
  
 @layer base {
